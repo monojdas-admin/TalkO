@@ -1,3 +1,5 @@
+![alt text](https://dasmanoj1996md.000webhostapp.com/assets/images/logo-192x192.png)
+
 # TalkO - A Smart Messaging Application
 ## (Powered by PHP-MySQL backend Server)
 
