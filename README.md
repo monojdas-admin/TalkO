@@ -7,7 +7,8 @@ TalkO is supported by a PHP-MySQL backend server for instant messaging.
 
 
    The TalkO is an Instant Messaging Application.
-A smart messaging app that helps you say more and do more. TalkO will take voice as well as text as the inputs to be sent.
+*  A smart messaging app that helps you say more and do more.
+*  TalkO will take voice as well as text as the inputs to be sent.
 *  The voice message is converted to string using Speech-To-Text technology
 *  The messages are sent as texts.
 *  TalkO lets the option of continuing chat without Data-Connection in form of regular SMS. 
