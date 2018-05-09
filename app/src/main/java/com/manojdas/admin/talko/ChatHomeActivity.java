@@ -1,14 +1,18 @@
 package com.manojdas.admin.talko;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -46,12 +50,19 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ChatHomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     ListView listView;
     //List<Contact> contacts;
+
+    private TextToSpeech tts;
+    private ArrayList<String> questions;
+    String[] name = new String[0];
+    String[] phnumber = new String[0];
+    String[] nid= new String[0];
 
     Cursor phones;
 
@@ -64,6 +75,11 @@ public class ChatHomeActivity extends AppCompatActivity
     MessageCustomAdapter adapter;
 
     ArrayList<Contact> contactArrayList = new ArrayList<>();
+
+    Bundle bundle=new Bundle();
+
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,9 +121,9 @@ public class ChatHomeActivity extends AppCompatActivity
         //contacts.addAll(alluser);
         int a=alluser.size();
 
-        String[] name = new String[a];
-        String[] phnumber = new String[a];
-        String[] nid= new String[a];
+        name = new String[a];
+        phnumber = new String[a];
+        nid= new String[a];
 
 
         for(User userlist: alluser){
@@ -128,18 +144,45 @@ public class ChatHomeActivity extends AppCompatActivity
         listView = (ListView) findViewById(R.id.lvMessage);
         listView.setAdapter(adapter);
 
-        final Bundle bundle=new Bundle();
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent=new Intent(getApplicationContext(),MessageActivity.class);
 
                 bundle.putString("name",contactArrayList.get(position).getName());
-                bundle.putString("number",contactArrayList.get(position).getName());
+                bundle.putString("number",contactArrayList.get(position).getNumber());
                 bundle.putString("id",contactArrayList.get(position).getId());
                 intent.putExtras(bundle);
                 startActivity(intent);
+            }
+        });
+
+
+
+        FloatingActionButton fabMic = (FloatingActionButton) findViewById(R.id.fabmic);
+        fabMic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Speak Something", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                listen();
+
+            }
+        });
+
+        tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    int result = tts.setLanguage(Locale.getDefault());
+                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e("TTS", "This Language is not supported");
+                    }
+                    //speak("Hello");
+
+                } else {
+                    Log.e("TTS", "Initilization Failed!");
+                }
             }
         });
 
@@ -205,8 +248,8 @@ public class ChatHomeActivity extends AppCompatActivity
         }else if (id == R.id.logout) {
             //return true;
 
-            SharedPreferences sharedPreferences=getSharedPreferences("User", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor=sharedPreferences.edit();
+            sharedPreferences = getSharedPreferences("User", Context.MODE_PRIVATE);
+            editor=sharedPreferences.edit();
             editor.putString("user_id",null);
             editor.putString("name",null);
             editor.putString("email",null);
@@ -248,6 +291,84 @@ public class ChatHomeActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+
+    private void loadQuestions(){
+        questions = new ArrayList<>();
+        questions.clear();
+        questions.add("Hello, What would you like to do?");
+        questions.add("What is your surname?");
+        questions.add("How old are you?");
+        questions.add("That's all I had, thank you ");
+    }
+
+    private void listen(){
+        Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        i.putExtra(RecognizerIntent.EXTRA_PROMPT, "Say something");
+
+        try {
+            startActivityForResult(i, 100);
+        } catch (ActivityNotFoundException a) {
+            Toast.makeText(getApplicationContext(), "Your device doesn't support Speech Recognition", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onDestroy();
+    }
+
+    private void speak(String text){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+
+        }else{
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 100){
+            if (resultCode == RESULT_OK && null != data) {
+                ArrayList<String> res = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                String inSpeech = res.get(0);
+                recognition(inSpeech);
+                //textView.setText(inSpeech);
+
+            }
+        }
+    }
+
+    private void recognition(String text){
+        Log.d("Speech",""+text);
+        String[] speech = text.split(" ");
+
+        for (int i=1;i<name.length;i++) {
+            if (text.toLowerCase().contains(name[i].toLowerCase())) {
+                Log.d("f2",""+name[i]);
+                Intent intent=new Intent(getApplicationContext(),MessageActivity.class);
+
+                bundle.putString("name",name[i]);
+                bundle.putString("number",phnumber[i]);
+                bundle.putString("id",nid[i]);
+                intent.putExtras(bundle);
+                Log.d("Voice command",name[i]+phnumber[i]+nid[i]);
+                startActivity(intent);
+            }
+        }
+        if(text.contains("hello")){
+            speak(questions.get(0));
+        }
+        //
     }
 
     class ReceiveContact extends AsyncTask<Void,Void,Void> {
@@ -388,21 +509,21 @@ public class ChatHomeActivity extends AppCompatActivity
             matchids =new String[inames.length];
             matchnames =new String[inames.length];
             matchphoneNumbers =new String[inames.length];
-            int x=0;
-            /*for (int i=0;i<=inames.length;i++){
-                //for (int j=0;j<=names.length;j++){
+            /*int x=0;
+            for (int i=0;i<=inames.length;i++){
+                for (int j=0;j<=names.length;j++){
                     if (phoneNumbers[i].contains(numbers[i])){
 
                         //matchnames[x]=names[j];
                         //matchphoneNumbers[x]=numbers[j];
 
-                        Log.d("Match",names[i]);
-                        Log.d("Match",numbers[i]);
-                        x=x+1;
+                        Log.d("Match",names[j]);
+                        Log.d("Match",numbers[j]);
+                        //x=x+1;
                     }
-                //}
-            }
-*/
+                }
+            }*/
+
 
             dbc=new DatabaseHelperContact(getApplicationContext());
             try {

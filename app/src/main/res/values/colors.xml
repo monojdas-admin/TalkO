@@ -37,4 +37,16 @@
         <item>@color/dot_dark_screen3</item>
         <item>@color/dot_dark_screen4</item>
     </array>
+
+    <color name="colorPrimaryRed">#c62828</color>
+    <color name="colorPrimaryDarkRed">#b71c1c</color>
+    <color name="colorAccentRed">#f44336</color>
+
+    <color name="colorPrimaryTeal">#00695c</color>
+    <color name="colorPrimaryDarkTeal">#004d40</color>
+    <color name="colorAccentTeal">#26a69a</color>
+
+    <color name="colorPrimaryBlue">#1565c0</color>
+    <color name="colorPrimaryDarkBlue">#0d47a1</color>
+    <color name="colorAccentBlue">#2196f3</color>
 </resources>

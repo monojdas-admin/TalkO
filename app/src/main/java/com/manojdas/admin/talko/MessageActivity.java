@@ -53,12 +53,28 @@ public class MessageActivity extends AppCompatActivity implements AsyncResponse 
 
     private TextToSpeech tts;
     private SharedPreferences preferences;
+    SharedPreferences.Editor editor;
+    Intent intent;
+    Bundle bundle;
 
     private final int REQ_CODE_SPEECH_INPUT = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        preferences=getSharedPreferences("Color", Context.MODE_PRIVATE);
+        final String strcheck=preferences.getString("color","");
+
+        if (strcheck.equals("Red")){
+            setTheme(R.style.AppThemeRed);
+        }else if(strcheck.equals("Teal")){
+            setTheme(R.style.AppThemeTeal);
+        }else if(strcheck.equals("Blue")){
+            setTheme(R.style.AppThemeBlue);
+        }
+        //getSupportActionBar().hide();
+
         setContentView(R.layout.activity_message);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -67,10 +83,12 @@ public class MessageActivity extends AppCompatActivity implements AsyncResponse 
 
         etmessage = (EditText) findViewById(R.id.etMessage);
 
-        Bundle bundle=getIntent().getExtras();
+        bundle=getIntent().getExtras();
         strRid=bundle.getString("id");
         receivername=bundle.getString("name");
         receivernumber=bundle.getString("number");
+
+        Log.d("name",strRid+receivername+receivernumber);
 
         if (bundle.getString("name")!=null) {
             this.setTitle(Html.fromHtml("<font color='#21ef8b'>"+bundle.getString("name")+"</font>"));
@@ -367,12 +385,40 @@ public class MessageActivity extends AppCompatActivity implements AsyncResponse 
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        editor = preferences.edit();
+        intent = new Intent(getApplicationContext(),MessageActivity.class);
+        bundle = new Bundle();
+        bundle.putString("name",receivername);
+        bundle.putString("number",receivernumber);
+        bundle.putString("id",strRid);
+        intent.putExtras(bundle);
+
         //noinspection SimplifiableIfStatement
         if (id == R.id.clearChat) {
             return true;
         }else if (id == R.id.action_copy) {
             return true;
         }
+        /*else if (id == R.id.themeRed) {
+            editor.putString("color","Red");
+            editor.commit();
+            startActivity(intent);
+            finish();
+        }else if (id == R.id.themeTeal) {
+            editor.putString("color","Teal");
+            editor.commit();
+            startActivity(intent);
+            finish();
+        }else if (id == R.id.themeBlue) {
+            editor.putString("color","Blue");
+            editor.commit();
+            startActivity(intent);
+            finish();
+        }else if (id == R.id.themeDefault) {
+            editor.putString("color","Default");
+            editor.commit();
+            startActivity(intent);
+        }*/
 
         return super.onOptionsItemSelected(item);
     }

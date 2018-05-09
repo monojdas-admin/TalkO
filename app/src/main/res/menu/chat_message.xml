@@ -11,4 +11,25 @@
         android:title="Search"
         android:icon="@drawable/ic_attachment_24dp"
         app:showAsAction="always"/>
+
+    <item android:title="Theme" >
+        <menu>
+            <item
+                android:id="@+id/themeRed"
+                android:orderInCategory="100"
+                android:title="Red"/>
+            <item
+                android:id="@+id/themeTeal"
+                android:orderInCategory="100"
+                android:title="Teal"/>
+            <item
+                android:id="@+id/themeBlue"
+                android:orderInCategory="100"
+                android:title="Blue"/>
+            <item
+                android:id="@+id/themeDefault"
+                android:orderInCategory="100"
+                android:title="Default"/>
+        </menu>
+    </item>
 </menu>
