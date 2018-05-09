@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-=======
+
 ![alt text](https://dasmanoj1996md.000webhostapp.com/assets/images/logo-192x192.png)
 
 # TalkO - A Smart Messaging Application
@@ -40,4 +39,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 * Mr. Prakash Joshi
 * Family
 * Friends
->>>>>>> origin/master
